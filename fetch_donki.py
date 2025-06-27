@@ -9,7 +9,7 @@ def get_flare_data(days_back=365, api_key="DEMO_KEY"):
     start_date = end_date - timedelta(days=days_back)
 
     url = f"https://api.nasa.gov/DONKI/FLR?startDate={start_date}&endDate={end_date}&api_key={api_key}"
-    print("🔭 Fetching:", url)
+    print("🌐 Fetching:", url)
 
     response = requests.get(url)
     if response.status_code != 200:
@@ -24,8 +24,7 @@ def get_flare_data(days_back=365, api_key="DEMO_KEY"):
             "classType": event.get("classType"),
             "sourceLocation": event.get("sourceLocation"),
             "activeRegionNum": event.get("activeRegionNum"),
-            "duration_minutes": event.get("duration", None)
+            "duration_minutes": event.get("duration")
         })
 
-    df = pd.DataFrame(data)
-    return df
+    return pd.DataFrame(data)
