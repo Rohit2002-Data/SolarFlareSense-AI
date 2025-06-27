@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 from datetime import date, timedelta
 
-def get_flare_data(days_back=365, api_key="DEMO_KEY"):
+def get_flare_data(days_back=365, api_key="fDxsGfFvzDGzp7g6lSusBKw18CSb6KzQ1Cz9mZmC"):
     end_date = date.today()
     start_date = end_date - timedelta(days=days_back)
 
