@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
 import time
@@ -8,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 from fetch_donki import get_flare_data
 
 # Streamlit config
@@ -64,15 +62,24 @@ st.markdown("### 📊 Model Evaluation")
 acc = model.score(X_test, y_test)
 st.write(f"✅ **Accuracy on test set:** `{acc * 100:.2f}%`")
 
-# Show confusion matrix
-with st.expander("📈 Confusion Matrix"):
+# 📋 Classification Report (instead of confusion matrix)
+with st.expander("📋 Classification Report"):
     y_pred = model.predict(X_test)
-    cm = confusion_matrix(y_test, y_pred)
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Oranges", xticklabels=le.classes_, yticklabels=le.classes_)
-    st.pyplot(fig)
+    report = classification_report(
+        y_test,
+        y_pred,
+        target_names=le.classes_,
+        output_dict=True
+    )
+    df_report = pd.DataFrame(report).transpose()
+    st.dataframe(df_report.style.format({
+        "precision": "{:.2f}",
+        "recall": "{:.2f}",
+        "f1-score": "{:.2f}",
+        "support": "{:.0f}"
+    }))
 
-# Prediction section
+# 🔮 Prediction section
 st.markdown("### 🔮 Predict Solar Flare Class")
 
 mode = st.radio("Choose Input Mode:", ["Manual Entry", "Select NASA Event"])
