@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import time
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
@@ -21,7 +20,6 @@ df = get_flare_data(days_back=days)
 # 🧪 Feature Engineering
 df["duration_minutes"] = pd.to_numeric(df["duration_minutes"], errors="coerce")
 
-# Extract latitude/longitude from sourceLocation
 def extract_coord(val, direction):
     if pd.isna(val): return None
     try:
@@ -36,18 +34,18 @@ df["longitude"] = df["sourceLocation"].apply(lambda x: extract_coord(x, "E") or 
 # Define features
 features = ["activeRegionNum", "duration_minutes", "latitude", "longitude"]
 
-# Drop rows missing the label only
+# Drop rows with missing label
 df = df.dropna(subset=["classType"])
 
-# Fallback: if feature columns missing, fill with -1
+# Fill missing feature values with -1
 df[features] = df[features].fillna(-1)
 
 # Safety check
 if df.empty:
-    st.error("❌ Still no valid flare records. Try again later or expand the date range.")
+    st.error("❌ No valid flare records found. Try expanding the date range.")
     st.stop()
 
-# Model training
+# ML modeling
 X = df[features]
 y = df["classType"]
 le = LabelEncoder()
@@ -57,20 +55,22 @@ X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.25
 model = RandomForestClassifier(n_estimators=100, class_weight="balanced", random_state=42)
 model.fit(X_train, y_train)
 
-# Show accuracy
+# Evaluation
 st.markdown("### 📊 Model Evaluation")
 acc = model.score(X_test, y_test)
 st.write(f"✅ **Accuracy on test set:** `{acc * 100:.2f}%`")
 
-# 📋 Classification Report (instead of confusion matrix)
 with st.expander("📋 Classification Report"):
     y_pred = model.predict(X_test)
+
     report = classification_report(
         y_test,
         y_pred,
+        labels=range(len(le.classes_)),      # ✅ Fixed mismatch
         target_names=le.classes_,
         output_dict=True
     )
+
     df_report = pd.DataFrame(report).transpose()
     st.dataframe(df_report.style.format({
         "precision": "{:.2f}",
@@ -79,9 +79,8 @@ with st.expander("📋 Classification Report"):
         "support": "{:.0f}"
     }))
 
-# 🔮 Prediction section
+# 🔮 Prediction
 st.markdown("### 🔮 Predict Solar Flare Class")
-
 mode = st.radio("Choose Input Mode:", ["Manual Entry", "Select NASA Event"])
 
 if mode == "Manual Entry":
