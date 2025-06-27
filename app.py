@@ -24,7 +24,7 @@ if refresh_interval > 0:
         st.session_state["last_refresh"] = time.time()
     if time.time() - st.session_state["last_refresh"] > refresh_interval * 60:
         st.session_state["last_refresh"] = time.time()
-        st.experimental_rerun()
+        st.rerun()
 
 # 📅 Date range selector
 days = st.sidebar.slider("📆 How many days back to fetch NASA data?", 30, 365, 180)
